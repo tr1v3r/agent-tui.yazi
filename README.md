@@ -3,6 +3,8 @@
 Launch [dsh-TUI](https://dshtui.com/) from [Yazi](https://yazi-rs.github.io/)
 and seed its editable prompt with files explicitly selected in Yazi.
 
+![Select two files in Yazi and open them in an editable dsh-TUI prompt](docs/demo.gif)
+
 - With no selection, dsh-TUI opens with an empty prompt. The hovered file is
   deliberately ignored.
 - With one or more selected files, their paths are appended as `@file`
@@ -16,6 +18,8 @@ and seed its editable prompt with files explicitly selected in Yazi.
 - Node.js ^22.19 or >=24
 - `dsh` with a working `dsh-tui` profile
 
+Tested on macOS. Linux and Windows integration feedback is welcome.
+
 ## Install
 
 ```sh
@@ -25,10 +29,10 @@ ya pkg add tr1v3r/dsh-tui
 Bind the plugin in `~/.config/yazi/keymap.toml`:
 
 ```toml
-[[mgr.prepend_keymap]]
-on = "<C-t>"
-run = "plugin dsh-tui"
-desc = "Launch DSH TUI with selected files"
+[mgr]
+prepend_keymap = [
+	{ on = "<C-t>", run = "plugin dsh-tui", desc = "Launch DSH TUI with selected files" },
+]
 ```
 
 Restart Yazi after installing or upgrading the plugin.
