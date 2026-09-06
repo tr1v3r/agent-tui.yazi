@@ -46,7 +46,7 @@ return {
 		if #paths == 0 then
 			command = Command(dsh_bin):arg({ "--profile", profile })
 		else
-			local inject = config_home() .. "/plugins/dsh-tui.yazi/inject.mjs"
+			local inject = config_home() .. "/plugins/dsh-tui.yazi/assets/inject.mjs"
 			command = Command(state.node_bin or defaults.node_bin)
 				:arg({ inject, dsh_bin, profile })
 				:arg(paths)

@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { createServer } from 'node:net';
 import test from 'node:test';
 
-import { appendPrompt, mention, pickServer, promptText } from '../inject.mjs';
+import { appendPrompt, mention, pickServer, promptText } from '../assets/inject.mjs';
 
 test('formats selected paths as DSH mentions', () => {
 	assert.equal(mention('/tmp/plain.txt'), '@/tmp/plain.txt');

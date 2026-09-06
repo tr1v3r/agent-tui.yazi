@@ -53,8 +53,10 @@ installed plugin.
 
 The plugin reads `cx.active.selected`, hides Yazi while dsh-TUI owns the
 terminal, and launches the configured profile. When files are selected, the
-Node helper discovers the newly launched dsh-TUI injection socket and sends
-only a `prompt.append` message. It never sends `prompt.submit`.
+Node helper in `assets/inject.mjs` discovers the newly launched dsh-TUI
+injection socket and sends only a `prompt.append` message. It never sends
+`prompt.submit`. Keeping the helper under `assets/` ensures `ya pkg` deploys
+it with the plugin.
 
 Paths containing whitespace are quoted using dsh-TUI's `@"path with spaces"`
 syntax. A path containing both whitespace and a literal double quote is
