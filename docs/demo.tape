@@ -12,17 +12,37 @@ Set Padding 12
 Set Framerate 12
 Set Theme "Catppuccin Mocha"
 Set WindowBar Colorful
+Set TypingSpeed 1ms
 
 Hide
-Type "export YAZI_CONFIG_HOME=/private/tmp/dsh-tui-demo/config"
+Type `repo_root="$(pwd -P)"`
 Enter
-Type "cd /private/tmp/dsh-tui-demo/workspace"
+Type `demo_root="$(cd /tmp && pwd -P)/dsh-tui-demo"`
 Enter
-Show
-
+Type `rm -rf "$demo_root"`
+Enter
+Type `mkdir -p "$demo_root/config/plugins/dsh-tui.yazi/assets" "$demo_root/workspace"`
+Enter
+Type `cp "$repo_root/main.lua" "$demo_root/config/plugins/dsh-tui.yazi/main.lua"`
+Enter
+Type `cp "$repo_root/assets/inject.mjs" "$demo_root/config/plugins/dsh-tui.yazi/assets/inject.mjs"`
+Enter
+Type `printf '%s\n' '[mgr]' 'prepend_keymap = [' '  { on = "d", run = "plugin dsh-tui", desc = "Launch dsh-TUI with selected files" },' ']' > "$demo_root/config/keymap.toml"`
+Enter
+Type `printf '%s\n' '# API specification' '' 'Public demo fixture.' > "$demo_root/workspace/api-spec.md"`
+Enter
+Type `printf '%s\n' 'Public demo notes.' > "$demo_root/workspace/notes with spaces.txt"`
+Enter
+Type `export YAZI_CONFIG_HOME="$demo_root/config"`
+Enter
+Type `cd "$demo_root/workspace"`
+Enter
+Type "clear"
+Enter
 Type "yazi"
 Enter
 Sleep 2s
+Show
 
 Space
 Sleep 750ms
