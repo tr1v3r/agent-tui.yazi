@@ -61,6 +61,24 @@ return {
 
 		if child then
 			child:wait()
+			-- Keep exit diagnostics visible until the user returns to Yazi.
+			-- Dropping the terminal permit immediately redraws over the resume hint.
+			local pause, pause_err = Command(state.node_bin or defaults.node_bin)
+				:arg({ "-e", [[
+process.stdout.write('\nPress Enter to return to Yazi… ');
+process.stdin.once('data', () => process.exit(0));
+process.stdin.once('end', () => process.exit(0));
+process.stdin.resume();
+]] })
+				:stdin(Command.INHERIT)
+				:stdout(Command.INHERIT)
+				:stderr(Command.INHERIT)
+				:spawn()
+			if pause then
+				pause:wait()
+			else
+				err = pause_err
+			end
 		end
 		permit:drop()
 

@@ -11,6 +11,8 @@ and seed its editable prompt with files explicitly selected in Yazi.
   mentions.
 - The prompt is never submitted automatically, so you can keep typing before
   pressing Enter.
+- After dsh-TUI exits, its session resume command and diagnostics stay visible.
+  Press Enter to return to Yazi.
 
 ## Requirements
 
