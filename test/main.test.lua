@@ -123,7 +123,7 @@ test("legacy executable, profile, and node options still control DSH injection",
 	)()
 	local cmd = result.commands[1]
 	equal(cmd.executable, "node-custom")
-	assert(cmd.args[1]:match("/plugins/dsh%-tui.yazi/assets/inject.mjs$"))
+	assert(cmd.args[1]:match("/plugins/agent%-tui.yazi/assets/inject.mjs$"))
 	equal(table.concat(cmd.args, "|", 2), "--command|3|/bin/my dsh|--profile|work-tui|/work/one|/work/two files")
 	equal(cmd.directory, "/work/current")
 	equal(result.clipboard, nil)

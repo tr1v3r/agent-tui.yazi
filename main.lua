@@ -136,7 +136,7 @@ return {
 		local command
 
 		if adapter == "dsh-tui" and #paths > 0 then
-			local inject = config_home() .. "/plugins/dsh-tui.yazi/assets/inject.mjs"
+			local inject = config_home() .. "/plugins/agent-tui.yazi/assets/inject.mjs"
 			command =
 				Command(node_bin):arg({ inject, "--command", tostring(#target.command) }):arg(target.command):arg(paths)
 		else

@@ -17,17 +17,17 @@ Set TypingSpeed 1ms
 Hide
 Type `repo_root="$(pwd -P)"`
 Enter
-Type `demo_root="$(cd /tmp && pwd -P)/dsh-tui-demo"`
+Type `demo_root="$(cd /tmp && pwd -P)/agent-tui-demo"`
 Enter
 Type `rm -rf "$demo_root"`
 Enter
-Type `mkdir -p "$demo_root/config/plugins/dsh-tui.yazi/assets" "$demo_root/workspace"`
+Type `mkdir -p "$demo_root/config/plugins/agent-tui.yazi/assets" "$demo_root/workspace"`
 Enter
-Type `cp "$repo_root/main.lua" "$demo_root/config/plugins/dsh-tui.yazi/main.lua"`
+Type `cp "$repo_root/main.lua" "$demo_root/config/plugins/agent-tui.yazi/main.lua"`
 Enter
-Type `cp "$repo_root/assets/inject.mjs" "$demo_root/config/plugins/dsh-tui.yazi/assets/inject.mjs"`
+Type `cp "$repo_root/assets/inject.mjs" "$demo_root/config/plugins/agent-tui.yazi/assets/inject.mjs"`
 Enter
-Type `printf '%s\n' '[mgr]' 'prepend_keymap = [' '  { on = "d", run = "plugin dsh-tui", desc = "Launch dsh-TUI with selected files" },' ']' > "$demo_root/config/keymap.toml"`
+Type `printf '%s\n' '[mgr]' 'prepend_keymap = [' '  { on = "d", run = "plugin agent-tui", desc = "Launch dsh-TUI with selected files" },' ']' > "$demo_root/config/keymap.toml"`
 Enter
 Type `printf '%s\n' '# API specification' '' 'Public demo fixture.' > "$demo_root/workspace/api-spec.md"`
 Enter
