@@ -50,13 +50,19 @@ Command = setmetatable({ INHERIT = "inherit" }, {
 		end
 		function cmd:spawn()
 			fixture.commands[#fixture.commands + 1] = self
-			if fixture.spawn_error then
-				return nil, fixture.spawn_error
+			local index = #fixture.commands
+			local spawn_err = fixture.spawn_error or (fixture.spawn_errors or {})[index]
+			if spawn_err then
+				return nil, spawn_err
 			end
 			return {
 				wait = function()
 					if fixture.wait_error then
 						error(fixture.wait_error)
+					end
+					local wait_err = (fixture.wait_errors or {})[index]
+					if wait_err then
+						return nil, wait_err
 					end
 					return { success = true }
 				end,
@@ -247,6 +253,39 @@ test("unexpected runtime errors still release Yazi's terminal", function()
 	local result = run()
 	assert(result.dropped)
 	assert(result.notifications[1].content:find("wait failed", 1, true))
+end)
+
+test("tool wait errors survive a subsequent pause spawn failure", function()
+	local run = launch()
+	fixture.wait_errors = { [1] = "tool wait failed" }
+	fixture.spawn_errors = { [2] = "pause spawn failed" }
+	local result = run()
+	assert(result.dropped)
+	equal(#result.commands, 2)
+	equal(result.notifications[1].content, "tool wait failed\nReturn-to-Yazi pause: pause spawn failed")
+end)
+
+test("tool and pause wait errors are both reported", function()
+	local run = launch()
+	fixture.wait_errors = { "tool wait failed", "pause wait failed" }
+	local result = run()
+	assert(result.dropped)
+	equal(result.notifications[1].content, "tool wait failed\nReturn-to-Yazi pause: pause wait failed")
+end)
+
+test("single tool or pause errors remain visible", function()
+	for _, errors in ipairs({
+		{ wait_errors = { [1] = "tool wait failed" }, expected = "tool wait failed" },
+		{ wait_errors = { [2] = "pause wait failed" }, expected = "pause wait failed" },
+		{ spawn_errors = { [2] = "pause spawn failed" }, expected = "pause spawn failed" },
+	}) do
+		local run = launch()
+		fixture.wait_errors = errors.wait_errors
+		fixture.spawn_errors = errors.spawn_errors
+		local result = run()
+		assert(result.dropped)
+		equal(result.notifications[1].content, errors.expected)
+	end
 end)
 
 print(string.format("%d plugin tests passed", passed))

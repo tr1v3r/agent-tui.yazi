@@ -94,12 +94,21 @@ Available adapters:
   The selected DSH profile must load dsh-TUI and expose its injection protocol.
   The adapter supports arbitrary launch arguments, including another profile.
 - **`clipboard`** (also the default for custom targets): copy selected paths
-  as plain quoted text, then launch the command without a prompt argument.
+  as plain quoted text under a `Selected files:` header, then launch the command
+  without a prompt argument.
   This replaces the clipboard only when files are selected. File contents are
   not copied; the agent can read the paths when you submit your task. Quotes,
   backslashes, and control characters use JSON string escaping.
 - **`none`**: launch only, without passing selected files. Useful for profiles
   that do not provide a terminal prompt or for wrappers handling context themselves.
+
+For example, selecting two files produces this clipboard content:
+
+```text
+Selected files:
+"/project/main.lua"
+"/project/two files.txt"
+```
 
 Only launch commands suited to taking over the terminal. A web or headless
 profile does not gain an editable terminal prompt by selecting it here.

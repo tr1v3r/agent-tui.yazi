@@ -168,11 +168,13 @@ process.stdin.resume();
 					:stderr(Command.INHERIT)
 					:spawn()
 				if pause then
-					pause:wait()
-				else
-					return pause_err
+					local _, pause_wait_err = pause:wait()
+					pause_err = pause_wait_err
 				end
-				return wait_err
+				if wait_err and pause_err then
+					return tostring(wait_err) .. "\nReturn-to-Yazi pause: " .. tostring(pause_err)
+				end
+				return wait_err or pause_err
 			end
 			return spawn_err
 		end)
