@@ -1,11 +1,67 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createServer } from 'node:net';
+import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
-import { appendPrompt, mention, pickServer, promptText } from '../assets/inject.mjs';
+import { appendPrompt, main, mention, parseInvocation, pickServer, promptText } from '../assets/inject.mjs';
+
+test('retains the legacy helper invocation', () => {
+	assert.deepEqual(parseInvocation(['my-dsh', 'work-tui', '/tmp/one']), {
+		command: ['my-dsh', '--profile', 'work-tui'], selected: ['/tmp/one'],
+	});
+});
+
+test('keeps command arguments separate from selected files', () => {
+	assert.deepEqual(parseInvocation([
+		'--command', '4', '/bin/my dsh', '--profile', 'work-tui', '--debug', '/tmp/one', '/tmp/two files',
+	]), {
+		command: ['/bin/my dsh', '--profile', 'work-tui', '--debug'], selected: ['/tmp/one', '/tmp/two files'],
+	});
+});
+
+test('rejects malformed invocations before launching', async () => {
+	for (const argv of [[], ['dsh'], ['dsh', 'work'], ['--command', '0', 'dsh', '/tmp/file'],
+		['--command', '-1', 'dsh', '/tmp/file'], ['--command', '1.5', 'dsh', '/tmp/file'],
+		['--command', 'oops', 'dsh', '/tmp/file'], ['--command', '4', 'dsh', '/tmp/file'],
+		['--command', '1', '', '/tmp/file'], ['--command', '1', 'dsh']]) {
+		assert.equal(parseInvocation(argv), undefined);
+		assert.equal(await main(argv), 2);
+	}
+});
+
+test('launches custom arguments through a linked helper and preserves the child exit code', async (context) => {
+	if (process.platform === 'win32') {
+		context.skip('Symbolic link fixture requires Unix');
+		return;
+	}
+	const dir = await mkdtemp(join(tmpdir(), 'dsh-tui-yazi-launch-'));
+	try {
+		const helper = join(dir, 'linked-helper.mjs');
+		const agent = join(dir, 'agent with spaces.mjs');
+		await symlink(fileURLToPath(new URL('../assets/inject.mjs', import.meta.url)), helper);
+		await writeFile(agent, `console.log(JSON.stringify({ cwd: process.cwd(), args: process.argv.slice(2) })); process.exit(23);`);
+		const child = spawn(process.execPath, [helper, '--command', '5', process.execPath, agent,
+			'--profile', 'work-tui', '$(not-a-shell); space', '/tmp/selected file'], { cwd: dir });
+		let stdout = '';
+		let stderr = '';
+		child.stdout.setEncoding('utf8').on('data', (chunk) => { stdout += chunk; });
+		child.stderr.setEncoding('utf8').on('data', (chunk) => { stderr += chunk; });
+		const code = await new Promise((done, reject) => {
+			child.once('error', reject);
+			child.once('close', done);
+		});
+		assert.equal(code, 23, stderr);
+		assert.deepEqual(JSON.parse(stdout), {
+			cwd: await realpath(dir), args: ['--profile', 'work-tui', '$(not-a-shell); space'],
+		});
+	} finally {
+		await rm(dir, { recursive: true, force: true });
+	}
+});
 
 test('formats selected paths as DSH mentions', () => {
 	assert.equal(mention('/tmp/plain.txt'), '@/tmp/plain.txt');

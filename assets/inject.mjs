@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, realpath } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { resolve } from 'node:path';
 import { createConnection } from 'node:net';
@@ -48,15 +48,31 @@ export const appendPrompt = (socketPath, text, timeout = 500) => new Promise((do
 
 const delay = (milliseconds) => new Promise((done) => setTimeout(done, milliseconds));
 
-export async function main(argv = process.argv.slice(2)) {
+export const parseInvocation = (argv) => {
+	if (argv[0] === '--command') {
+		const count = Number(argv[1]);
+		if (!Number.isSafeInteger(count) || count < 1 || argv.length <= count + 2) return undefined;
+		const command = argv.slice(2, count + 2);
+		if (!command[0]) return undefined;
+		return { command, selected: argv.slice(count + 2) };
+	}
+
+	// Retain the original helper invocation for existing wrappers.
 	const [dshBin, profile, ...selected] = argv;
-	if (!dshBin || !profile || selected.length === 0) return 2;
+	if (!dshBin || !profile || selected.length === 0) return undefined;
+	return { command: [dshBin, '--profile', profile], selected };
+};
+
+export async function main(argv = process.argv.slice(2)) {
+	const invocation = parseInvocation(argv);
+	if (!invocation) return 2;
+	const { command, selected } = invocation;
 
 	const launchedAt = Date.now();
 	const cwd = process.cwd();
 	const serversFile = resolve(homedir(), '.dsh-tui/inject/servers.json');
 	const deadline = launchedAt + 15_000;
-	const dsh = spawn(dshBin, ['--profile', profile], { stdio: 'inherit' });
+	const dsh = spawn(command[0], command.slice(1), { stdio: 'inherit' });
 	const targetPid = dsh.pid;
 	let serverReadyAt;
 
@@ -114,6 +130,7 @@ export async function main(argv = process.argv.slice(2)) {
 	return exitCode;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+const entryPath = process.argv[1] && await realpath(process.argv[1]).catch(() => process.argv[1]);
+if (entryPath && import.meta.url === pathToFileURL(entryPath).href) {
 	process.exit(await main());
 }
