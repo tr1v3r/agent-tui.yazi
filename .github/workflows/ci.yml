@@ -23,3 +23,5 @@ jobs:
         run: node --check assets/inject.mjs
       - name: Test injection helper
         run: node --test
+      - name: Test plugin target routing
+        run: lua test/main.test.lua
